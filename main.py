@@ -1,5 +1,6 @@
-from ps3838api.api import PinnacleClient  
 from datetime import datetime, timedelta, timezone
+
+from ps3838api.api import PinnacleClient
 
 client = PinnacleClient()
 
