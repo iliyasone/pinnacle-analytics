@@ -47,17 +47,11 @@ function fetchAndAppendBets() {
       return;
     }
     
-    // Calculate total profit in stakes
+    // Calculate total profit in stakes (winLoss / risk)
     const totalProfit = newBets.reduce((sum, bet) => {
-      let profit;
-      if (bet.betStatus === 'WON') {
-        profit = bet.winLoss || bet.win || 0;
-      } else if (bet.betStatus === 'LOST') {
-        profit = -(bet.risk || 0);
-      } else {
-        profit = 0;
-      }
-      return sum + profit;
+      const risk = bet.risk || 1; // Avoid division by zero
+      const profitInStakes = (bet.winLoss || 0) / risk;
+      return sum + profitInStakes;
     }, 0);
     
     // Append new bets
@@ -83,7 +77,6 @@ function fetchAndAppendBets() {
 function getAccountName(baseUrl, token) {
   const url = baseUrl.replace(/\/$/, '') + '/account_info';
   
-
   const options = {
     'method': 'get',
     'headers': {
@@ -108,20 +101,9 @@ function getAccountName(baseUrl, token) {
 // Get bets from API
 // ============================================
 function getBets(baseUrl, token) {
-  // Calculate date range
-  const toDate = new Date();
-  const fromDate = new Date();
-  fromDate.setDate(fromDate.getDate() - DAYS_TO_FETCH);
-  
-  // Format dates as YYYY-MM-DD
-  const fromDateStr = Utilities.formatDate(fromDate, Session.getScriptTimeZone(), 'yyyy-MM-dd');
-  const toDateStr = Utilities.formatDate(toDate, Session.getScriptTimeZone(), 'yyyy-MM-dd');
-  
   const url = baseUrl.replace(/\/$/, '') + '/get_bets';
-  
   const payload = {
-    'fromDate': fromDateStr,
-    'toDate': toDateStr
+    'days' : DAYS_TO_FETCH
   };
   
   const options = {
@@ -134,7 +116,7 @@ function getBets(baseUrl, token) {
     'muteHttpExceptions': true
   };
   
-  Logger.log('Fetching bets from ' + fromDateStr + ' to ' + toDateStr);
+  Logger.log('Fetching bets from ' + DAYS_TO_FETCH + ' ago');
   
   const response = UrlFetchApp.fetch(url, options);
   const responseCode = response.getResponseCode();
@@ -184,9 +166,7 @@ function appendBetsToSheet(sheet, bets, accountName) {
     
     // Parse date
     const date = new Date(bet.placedAt);
-    
-    // League (using leagueId for now, you may want to map this to league names)
-    const league = bet.leagueId || 'N/A';
+    const league = bet.leagueId
     
     // Home-Away teams
     const homeAway = bet.team1 + ' - ' + bet.team2;
@@ -200,15 +180,9 @@ function appendBetsToSheet(sheet, bets, accountName) {
     // Match total (ftTeam1Score + ftTeam2Score)
     const matchTotal = (bet.ftTeam1Score || 0) + (bet.ftTeam2Score || 0);
     
-    // Profit (win/risk) - use winLoss if available, otherwise calculate
-    let profit;
-    if (bet.betStatus === 'WON') {
-      profit = bet.winLoss || bet.win || 0;
-    } else if (bet.betStatus === 'LOST') {
-      profit = -(bet.risk || 0);
-    } else {
-      profit = 0; // Pending or other status
-    }
+    // Profit in stakes (winLoss / risk)
+    const risk = bet.risk || 1; // Avoid division by zero
+    const profit = (bet.winLoss || 0) / risk;
     
     // Bet ID
     const betId = bet.betId;
@@ -239,6 +213,8 @@ function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('Bets Tools ⚽')
     .addItem('Fetch and Append Bets', 'fetchAndAppendBets')
+    .addSeparator()
+    .addItem('Set API Credentials', 'setApiCredentials')
     .addItem('Setup BETS sheets', 'setupSheets')
     .addToUi();
 }

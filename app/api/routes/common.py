@@ -13,8 +13,12 @@ from app.schemas import (
     ClientBalanceRequest,
     ClientBalanceResponse,
 )
+from app.schemas.responses import LeaguesResponse
 
 router = APIRouter()
+
+MAX_REQUEST_SPAN = timedelta(days=29, hours=23, minutes=59, seconds=59)
+MAX_LOOKBACK = timedelta(days=30)
 
 
 def get_pinnacle_client() -> PinnacleClient:
@@ -41,6 +45,16 @@ async def get_bets(
     )
 
     return BetsResponseModel(**bets)
+
+
+@router.post("/get_leagues", response_model=LeaguesResponse)
+async def get_leagues(
+    client: PinnacleClient = Depends(get_pinnacle_client),
+    api_key: APIKey = Depends(verify_api_key),
+) -> LeaguesResponse:
+    leagues = client.get_leagues()
+
+    return LeaguesResponse(leagues=leagues)
 
 
 @router.post("/get_client_balance", response_model=ClientBalanceResponse)

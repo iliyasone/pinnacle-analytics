@@ -172,43 +172,6 @@ Check if the API is running.
 }
 ```
 
-## Google Apps Script Example
-
-```javascript
-function getPinnacleData() {
-  const API_KEY = "your-api-key-here";
-  const API_URL = "http://your-server:8000";
-
-  // Get bets for the last 7 days
-  const betsResponse = UrlFetchApp.fetch(API_URL + "/get_bets", {
-    method: "POST",
-    contentType: "application/json",
-    headers: {
-      "X-Api-Key": API_KEY
-    },
-    payload: JSON.stringify({
-      days: 7
-    })
-  });
-
-  const betsData = JSON.parse(betsResponse.getContentText());
-  Logger.log(betsData);
-
-  // Get client balance
-  const balanceResponse = UrlFetchApp.fetch(API_URL + "/get_client_balance", {
-    method: "POST",
-    contentType: "application/json",
-    headers: {
-      "X-Api-Key": API_KEY
-    },
-    payload: JSON.stringify({})
-  });
-
-  const balanceData = JSON.parse(balanceResponse.getContentText());
-  Logger.log(balanceData);
-}
-```
-
 ## Database Migrations
 
 Migrations run automatically on application startup, initializing tables for empty databases or applying pending migrations for existing databases.

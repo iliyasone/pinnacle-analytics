@@ -5,7 +5,7 @@ from typing import AsyncIterator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import router
+from app.api.routes import billing, common
 from app.db.migration import run_migrations
 
 logging.basicConfig(level=logging.INFO)
@@ -41,4 +41,5 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(router)
+app.include_router(common.router)
+app.include_router(billing.router)
