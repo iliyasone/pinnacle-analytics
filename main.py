@@ -10,3 +10,5 @@ client.get_bets(
     from_date=datetime.now(timezone.utc) - timedelta(days=1),
     to_date=datetime.now(timezone.utc),
 )
+
+client.get_client_balance()

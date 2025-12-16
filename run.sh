@@ -1,1 +1,0 @@
-uv run dotenv -f .env run -- python src/pinnacle_analytics/scripts/print_balance.py
