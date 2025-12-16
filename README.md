@@ -50,16 +50,15 @@ uv sync
 ```
 
 2. Set up your environment variables in `.env`
+   - For local development, you can use SQLite: `DATABASE_URL=sqlite:///./pinnacle_analytics.db`
+   - For production, use PostgreSQL (see `.env.example`)
 
-3. Run Alembic migrations:
-```bash
-uv run alembic upgrade head
-```
-
-4. Start the development server:
+3. Start the development server:
 ```bash
 uv run uvicorn app.main:app --reload
 ```
+
+Note: Database migrations run automatically on application startup. Tables will be initialized if the database is empty.
 
 ## API Key Management
 
@@ -200,12 +199,14 @@ function getPinnacleData() {
 
 ## Database Migrations
 
+Migrations run automatically on application startup, initializing tables for empty databases or applying pending migrations for existing databases.
+
 ### Create a new migration:
 ```bash
 uv run alembic revision --autogenerate -m "description"
 ```
 
-### Apply migrations:
+### Manually apply migrations (optional):
 ```bash
 uv run alembic upgrade head
 ```
