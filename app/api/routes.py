@@ -6,7 +6,13 @@ from ps3838api.api import PinnacleClient
 from app.core.config import settings
 from app.core.security import verify_api_key
 from app.db.models import APIKey
-from app.schemas import BetsRequest, BetsResponseModel, ClientBalanceRequest, ClientBalanceResponse
+from app.schemas import (
+    AccountInfoResponse,
+    BetsRequest,
+    BetsResponseModel,
+    ClientBalanceRequest,
+    ClientBalanceResponse,
+)
 
 router = APIRouter()
 
@@ -46,6 +52,16 @@ async def get_client_balance(
     balance = client.get_client_balance()
 
     return ClientBalanceResponse(data=balance)
+
+
+@router.get("/account_info", response_model=AccountInfoResponse)
+async def get_account_info(
+    api_key: APIKey = Depends(verify_api_key),
+) -> AccountInfoResponse:
+    return AccountInfoResponse(
+        account_name=settings.PS3838_LOGIN,
+        base_api_url=settings.PS3838_API_BASE_URL,
+    )
 
 
 @router.get("/health")

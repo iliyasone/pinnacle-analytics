@@ -18,3 +18,8 @@ class BetsResponseModel(BaseModel):
 
 class ClientBalanceResponse(BaseModel):
     data: Any
+
+
+class AccountInfoResponse(BaseModel):
+    account_name: str | None
+    base_api_url: str | None
