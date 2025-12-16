@@ -12,7 +12,7 @@ def run_migrations() -> None:
     """Run Alembic migrations to upgrade the database to the latest version.
 
     This function will:
-    - Initialize all tables if the database is empty (SQLite or PostgreSQL)
+    - Initialize all tables if the database is empty
     - Apply pending migrations if the database already exists
     """
     try:

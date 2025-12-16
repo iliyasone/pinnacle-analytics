@@ -1,15 +1,17 @@
 from fastapi import Depends, Header, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
 from app.db.models import APIKey
 
 
-def verify_api_key(
+async def verify_api_key(
     x_api_key: str = Header(..., description="API key for authentication"),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> APIKey:
-    db_key = db.query(APIKey).filter(APIKey.key == x_api_key, APIKey.is_active).first()
+    result = await db.execute(select(APIKey).where(APIKey.key == x_api_key, APIKey.is_active == True))  # noqa: E712
+    db_key = result.scalar_one_or_none()
     if not db_key:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

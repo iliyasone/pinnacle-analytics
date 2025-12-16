@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends
 from ps3838api.api import PinnacleClient
 
+from app.core.config import settings
 from app.core.security import verify_api_key
 from app.db.models import APIKey
 from app.schemas import BetsRequest, BetsResponseModel, ClientBalanceRequest, ClientBalanceResponse
@@ -11,11 +12,15 @@ router = APIRouter()
 
 
 def get_pinnacle_client() -> PinnacleClient:
-    return PinnacleClient()
+    return PinnacleClient(
+        login=settings.PS3838_LOGIN,
+        password=settings.PS3838_PASSWORD,
+        api_base_url=settings.PS3838_API_BASE_URL,
+    )
 
 
 @router.post("/get_bets", response_model=BetsResponseModel)
-def get_bets(
+async def get_bets(
     request: BetsRequest,
     client: PinnacleClient = Depends(get_pinnacle_client),
     api_key: APIKey = Depends(verify_api_key),
@@ -29,11 +34,11 @@ def get_bets(
         to_date=to_date,
     )
 
-    return BetsResponseModel(data=bets)
+    return BetsResponseModel(**bets)
 
 
 @router.post("/get_client_balance", response_model=ClientBalanceResponse)
-def get_client_balance(
+async def get_client_balance(
     request: ClientBalanceRequest,
     client: PinnacleClient = Depends(get_pinnacle_client),
     api_key: APIKey = Depends(verify_api_key),
@@ -44,5 +49,5 @@ def get_client_balance(
 
 
 @router.get("/health")
-def health_check() -> dict[str, str]:
+async def health_check() -> dict[str, str]:
     return {"status": "healthy"}

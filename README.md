@@ -19,6 +19,18 @@ A FastAPI-based REST API for accessing Pinnacle betting data. This API provides 
 - PostgreSQL (included in Docker Compose setup)
 - Pinnacle API credentials
 
+## Set up
+
+```bash
+uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+Test
+
+```bash
+uv run python tests/scipts/check_get_bets.py 
+```
+
 ## Quick Start with Docker
 
 1. Clone the repository and navigate to the project directory

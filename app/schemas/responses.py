@@ -1,11 +1,19 @@
 from typing import Any
 
-from ps3838api.models.bets import BetsResponse
+from ps3838api.models.bets import ManualBet, ParlayBetV2, SpecialBetV3, StraightBetV3, TeaserBet
 from pydantic import BaseModel
 
 
 class BetsResponseModel(BaseModel):
-    data: BetsResponse
+    moreAvailable: bool
+    pageSize: int
+    fromRecord: int
+    toRecord: int
+    straightBets: list[StraightBetV3]
+    parlayBets: list[ParlayBetV2] = []
+    teaserBets: list[TeaserBet] = []
+    specialBets: list[SpecialBetV3] = []
+    manualBets: list[ManualBet] = []
 
 
 class ClientBalanceResponse(BaseModel):
