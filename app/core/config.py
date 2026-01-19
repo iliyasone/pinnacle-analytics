@@ -1,3 +1,6 @@
+from datetime import datetime
+from warnings import deprecated
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -6,7 +9,18 @@ class Settings(BaseSettings):
     PS3838_LOGIN: str | None = None
     PS3838_PASSWORD: str | None = None
     PS3838_API_BASE_URL: str | None = None
-    billing_period_day: int
+    api_gained_access: datetime
+    """Timestamp when we receive API access."""
+
+    @deprecated("Use `settings.api_gained_access.day`")
+    @property
+    def billing_period_day(self) -> int:
+        """
+        Billing period day derived from `api_gained_access`.
+
+        This should be treated as the single source of truth.
+        """
+        return self.api_gained_access.day
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

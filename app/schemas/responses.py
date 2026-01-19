@@ -31,6 +31,7 @@ class AccountInfoResponse(BaseModel):
 
 
 class BillingPeriodBetsResponse(BaseModel):
+    api_gained_access: datetime | None
     billing_period_day: int
     period_start: datetime
     period_end: datetime

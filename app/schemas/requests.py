@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -17,5 +18,10 @@ class ClientBalanceRequest(BaseModel):
 class BillingPeriodBetsRequest(BaseModel):
     period: BillingPeriodSelector = Field(
         default="CURRENT",
-        description="Select which billing period to retrieve bets for",
+        description="Select which billing period to retrieve bets for (CURRENT or PREVIOUS)",
+    )
+    api_gained_access: datetime | None = Field(
+        default=None,
+        description="Timestamp when API access was gained. Used to determine billing period boundaries. "
+        "If not provided, defaults to billing_period_day from settings.",
     )
