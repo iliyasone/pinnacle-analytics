@@ -58,6 +58,10 @@ async def get_billing_period_bets(
         from_date=period_start,
         to_date=period_end,
     )
+    bets["straightBets"] = [
+        bet for bet in bets.get("straightBets", []) if bet.get("betStatus") != "NOT_ACCEPTED"
+    ]
+
     merged_bets = BetsResponseModel(**bets)
 
     return BillingPeriodBetsResponse(

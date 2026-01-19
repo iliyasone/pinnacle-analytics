@@ -43,6 +43,9 @@ async def get_bets(
         from_date=from_date,
         to_date=to_date,
     )
+    bets["straightBets"] = [
+        bet for bet in bets.get("straightBets", []) if bet.get("betStatus") != "NOT_ACCEPTED"
+    ]
 
     return BetsResponseModel(**bets)
 
