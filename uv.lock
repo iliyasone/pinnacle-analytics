@@ -595,7 +595,7 @@ requires-dist = [
     { name = "alembic", specifier = ">=1.17.2" },
     { name = "asyncpg", specifier = ">=0.30.0" },
     { name = "fastapi", specifier = ">=0.124.4" },
-    { name = "ps3838api", specifier = ">=1.0.5" },
+    { name = "ps3838api", specifier = "==1.2.0" },
     { name = "psycopg2-binary", specifier = ">=2.9.11" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "pydantic-settings", specifier = ">=2.12.0" },
@@ -634,15 +634,15 @@ wheels = [
 
 [[package]]
 name = "ps3838api"
-version = "1.0.5"
+version = "1.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "rapidfuzz" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/eb/bc/59603805f40711abbb06497c594dde2fe97837228fac0743e121a6f3788e/ps3838api-1.0.5.tar.gz", hash = "sha256:6848b92b0bd8ccd8b53b6ff9ee748b62a9cad97be5883d2f500c023bb8b07e02", size = 26167, upload-time = "2025-12-16T20:32:17.507Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/14/92/82d52019033797fddc35782890039148ccc9f73f6db4e1b8622f93a59938/ps3838api-1.2.0.tar.gz", hash = "sha256:6a2acbc36011dfec4ae0d4c240207d9a1bc3f7d8e20afa2f1ac6885cc922bd47", size = 27132, upload-time = "2026-01-19T13:57:23.822Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7e/1c/2a84729aac27586ebafde6fa14c18dbfe7e58f737b4b02d3c3686c0b1ef3/ps3838api-1.0.5-py3-none-any.whl", hash = "sha256:8ac0ca1fc738a0027161c1340223882a9c502c4ada0cbac5c6e0ff65789478c4", size = 28570, upload-time = "2025-12-16T20:32:16.12Z" },
+    { url = "https://files.pythonhosted.org/packages/bd/e7/bbafede8bc58e3b77cfc9bb0340af9071ed602617f07586ed0a48aade8ee/ps3838api-1.2.0-py3-none-any.whl", hash = "sha256:90ea0d82d40f30ef059fd42a54133d8b13a74a29f49df4492f64c8228aae4575", size = 29376, upload-time = "2026-01-19T13:57:22.894Z" },
 ]
 
 [[package]]

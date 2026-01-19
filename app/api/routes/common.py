@@ -3,9 +3,9 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends
 from ps3838api.api import PinnacleClient
 from ps3838api.models.bets import (
-    BetsResponse,
     ManualBet,
     ParlayBetV2,
+    RejectedBet,
     SpecialBetV3,
     StraightBetV3,
     TeaserBet,
@@ -52,7 +52,7 @@ async def get_bets(
     # API requires date range to be strictly less than 30 days
     max_span = timedelta(days=29, hours=23)
     current_date = from_date
-    straight_bets: list[StraightBetV3] = []
+    straight_and_rejected_bets: list[StraightBetV3 | RejectedBet] = []
     parlay_bets: list[ParlayBetV2] = []
     teaser_bets: list[TeaserBet] = []
     special_bets: list[SpecialBetV3] = []
@@ -68,7 +68,7 @@ async def get_bets(
         )
 
         more_available = more_available or chunk_bets.get("moreAvailable", False)
-        straight_bets.extend(chunk_bets.get("straightBets", []))
+        straight_and_rejected_bets.extend(chunk_bets.get("straightBets", []))
         parlay_bets.extend(chunk_bets.get("parlayBets", []))
         teaser_bets.extend(chunk_bets.get("teaserBets", []))
         special_bets.extend(chunk_bets.get("specialBets", []))
@@ -76,25 +76,23 @@ async def get_bets(
 
         current_date = chunk_end
 
-    straight_bets = [bet for bet in straight_bets if bet["betStatus"] != "NOT_ACCEPTED"]
+    straight_bets = [bet for bet in straight_and_rejected_bets if bet["betStatus"] != "NOT_ACCEPTED"]
 
     total_records = (
         len(straight_bets) + len(parlay_bets) + len(teaser_bets) + len(special_bets) + len(manual_bets)
     )
 
-    all_bets: BetsResponse = {
-        "moreAvailable": more_available,
-        "pageSize": total_records,
-        "fromRecord": 0,
-        "toRecord": total_records,
-        "straightBets": straight_bets,
-        "parlayBets": parlay_bets,
-        "teaserBets": teaser_bets,
-        "specialBets": special_bets,
-        "manualBets": manual_bets,
-    }
-
-    return BetsResponseModel(**all_bets)
+    return BetsResponseModel(
+        moreAvailable=more_available,
+        pageSize=total_records,
+        fromRecord=0,
+        toRecord=total_records,
+        straightBets=straight_bets,
+        parlayBets=parlay_bets,
+        teaserBets=teaser_bets,
+        specialBets=special_bets,
+        manualBets=manual_bets,
+    )
 
 
 @router.post("/get_leagues", response_model=LeaguesResponse)
