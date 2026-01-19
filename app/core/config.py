@@ -12,14 +12,9 @@ class Settings(BaseSettings):
     api_gained_access: datetime
     """Timestamp when we receive API access."""
 
-    @deprecated("Use `settings.api_gained_access.day`")
     @property
+    @deprecated("Use `settings.api_gained_access.day`")
     def billing_period_day(self) -> int:
-        """
-        Billing period day derived from `api_gained_access`.
-
-        This should be treated as the single source of truth.
-        """
         return self.api_gained_access.day
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")

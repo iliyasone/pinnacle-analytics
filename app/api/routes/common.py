@@ -2,6 +2,14 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends
 from ps3838api.api import PinnacleClient
+from ps3838api.models.bets import (
+    BetsResponse,
+    ManualBet,
+    ParlayBetV2,
+    SpecialBetV3,
+    StraightBetV3,
+    TeaserBet,
+)
 
 from app.core.config import settings
 from app.core.security import verify_api_key
@@ -16,9 +24,6 @@ from app.schemas import (
 from app.schemas.responses import LeaguesResponse
 
 router = APIRouter()
-
-MAX_REQUEST_SPAN = timedelta(days=29, hours=23, minutes=59, seconds=59)
-MAX_LOOKBACK = timedelta(days=30)
 
 
 def get_pinnacle_client() -> PinnacleClient:
@@ -35,19 +40,61 @@ async def get_bets(
     client: PinnacleClient = Depends(get_pinnacle_client),
     api_key: APIKey = Depends(verify_api_key),
 ) -> BetsResponseModel:
-    to_date = datetime.now(timezone.utc)
-    from_date = to_date - timedelta(days=request.days)
+    if request.from_date is not None and request.to_date is not None:
+        from_date = request.from_date
+        to_date = request.to_date
+    else:
+        to_date = datetime.now(timezone.utc)
+        days = request.days or 1
+        from_date = to_date - timedelta(days=days)
 
-    bets = client.get_bets(
-        betlist="SETTLED",
-        from_date=from_date,
-        to_date=to_date,
+    # Split requests into 29-day chunks if necessary
+    # API requires date range to be strictly less than 30 days
+    max_span = timedelta(days=29, hours=23)
+    current_date = from_date
+    straight_bets: list[StraightBetV3] = []
+    parlay_bets: list[ParlayBetV2] = []
+    teaser_bets: list[TeaserBet] = []
+    special_bets: list[SpecialBetV3] = []
+    manual_bets: list[ManualBet] = []
+    more_available = False
+
+    while current_date < to_date:
+        chunk_end = min(current_date + max_span, to_date)
+        chunk_bets = client.get_bets(
+            betlist="SETTLED",
+            from_date=current_date,
+            to_date=chunk_end,
+        )
+
+        more_available = more_available or chunk_bets.get("moreAvailable", False)
+        straight_bets.extend(chunk_bets.get("straightBets", []))
+        parlay_bets.extend(chunk_bets.get("parlayBets", []))
+        teaser_bets.extend(chunk_bets.get("teaserBets", []))
+        special_bets.extend(chunk_bets.get("specialBets", []))
+        manual_bets.extend(chunk_bets.get("manualBets", []))
+
+        current_date = chunk_end
+
+    straight_bets = [bet for bet in straight_bets if bet["betStatus"] != "NOT_ACCEPTED"]
+
+    total_records = (
+        len(straight_bets) + len(parlay_bets) + len(teaser_bets) + len(special_bets) + len(manual_bets)
     )
-    bets["straightBets"] = [
-        bet for bet in bets.get("straightBets", []) if bet.get("betStatus") != "NOT_ACCEPTED"
-    ]
 
-    return BetsResponseModel(**bets)
+    all_bets: BetsResponse = {
+        "moreAvailable": more_available,
+        "pageSize": total_records,
+        "fromRecord": 0,
+        "toRecord": total_records,
+        "straightBets": straight_bets,
+        "parlayBets": parlay_bets,
+        "teaserBets": teaser_bets,
+        "specialBets": special_bets,
+        "manualBets": manual_bets,
+    }
+
+    return BetsResponseModel(**all_bets)
 
 
 @router.post("/get_leagues", response_model=LeaguesResponse)

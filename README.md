@@ -4,7 +4,7 @@ A FastAPI-based REST API for accessing Pinnacle betting data. This API provides 
 
 ## Features
 
-- **Get Bets**: Retrieve settled bets for a specified time period (up to 30 days)
+- **Get Bets**: Retrieve settled bets by days or explicit date range (long ranges are chunked)
 - **Get Client Balance**: Retrieve current client balance
 - **Header-Based Authentication**: Secure access using API keys via `X-Api-Key` header
 - **API Key Management**: Create, list, activate, deactivate, and delete API keys
@@ -117,7 +117,7 @@ Retrieve settled bets for a specified time period.
 **Headers:**
 - `X-Api-Key`: Your API key for authentication
 
-**Request Body:**
+**Request Body (option A):**
 ```json
 {
   "days": 7
@@ -125,14 +125,33 @@ Retrieve settled bets for a specified time period.
 ```
 
 **Parameters:**
-- `days` (integer, optional): Number of past days to retrieve bets (1-30, default: 1)
+- `days` (integer, optional): Number of past days to retrieve bets (default: 1)
+
+**Request Body (option B):**
+```json
+{
+  "from_date": "2024-01-01T00:00:00Z",
+  "to_date": "2024-02-01T00:00:00Z"
+}
+```
+
+**Parameters:**
+- `from_date` (datetime, optional): Period start (ISO 8601)
+- `to_date` (datetime, optional): Period end, exclusive (ISO 8601)
+- Provide either `days` or both `from_date` and `to_date`
 
 **Response:**
 ```json
 {
-  "data": {
-    // Pinnacle API bet data
-  }
+  "moreAvailable": false,
+  "pageSize": 123,
+  "fromRecord": 0,
+  "toRecord": 122,
+  "straightBets": [],
+  "parlayBets": [],
+  "teaserBets": [],
+  "specialBets": [],
+  "manualBets": []
 }
 ```
 

@@ -4,11 +4,11 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends
 from ps3838api.api import PinnacleClient
 
-from app.api.routes.common import get_pinnacle_client
+from app.api.routes.common import get_bets, get_pinnacle_client
 from app.core.config import settings
 from app.core.security import verify_api_key
 from app.db.models import APIKey
-from app.schemas import BetsResponseModel, BillingPeriodBetsRequest, BillingPeriodBetsResponse
+from app.schemas import BetsRequest, BillingPeriodBetsRequest, BillingPeriodBetsResponse
 from app.schemas.requests import BillingPeriodSelector
 
 router = APIRouter()
@@ -78,13 +78,13 @@ async def get_billing_period_bets(
 ) -> BillingPeriodBetsResponse:
     now = datetime.now(timezone.utc)
 
-    # Use provided api_gained_access or fall back to settings.billing_period_day
+    # Use provided api_gained_access or fall back to settings.api_gained_access
     if request.api_gained_access:
         access_ts = request.api_gained_access
         billing_day = access_ts.day
         billing_time = (access_ts.hour, access_ts.minute, access_ts.second)
     else:
-        # Fallback: use settings.billing_period_day with midnight UTC
+        # Fallback: use settings.api_gained_access
         access_ts = settings.api_gained_access
         billing_day = settings.api_gained_access.day
         billing_time = (
@@ -95,16 +95,8 @@ async def get_billing_period_bets(
 
     period_start, period_end = _get_billing_period_bounds(request.period, billing_day, billing_time, now)
 
-    bets = client.get_bets(
-        betlist="SETTLED",
-        from_date=period_start,
-        to_date=period_end,
-    )
-    bets["straightBets"] = [
-        bet for bet in bets.get("straightBets", []) if bet.get("betStatus") != "NOT_ACCEPTED"
-    ]
-
-    merged_bets = BetsResponseModel(**bets)
+    bets_request = BetsRequest(from_date=period_start, to_date=period_end)
+    merged_bets = await get_bets(request=bets_request, client=client, api_key=api_key)
 
     return BillingPeriodBetsResponse(
         api_gained_access=access_ts,
